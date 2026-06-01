@@ -1,7 +1,9 @@
 
-import fs from "fs";// Importa el módulo fs de Node.js 
+//import fs from "fs";// Importa el módulo fs de Node.js 
 //..sirve para leer y escribir archivos en el servidor. En mi caso,
 //..para manejar profesores.json como si fuera mi "base de datos".
+
+import connection from "../database.js";
 
 const filepath = "./alumnos.json"; //ruta del archivo json, donde está ubicado.
 
@@ -46,25 +48,22 @@ export const getUnAlumno = (req, res) => {
 
 }
 
-export const postAlumnos = (req,res) => {
-    //leemos el archivo de alumnos.json
-    const data = fs.readFileSync(filepath , "utf-8");
-    //Convertimos el json en array de js
-    const alumnos = JSON.parse(data);
-    //Agregamos el nuevo alumno DESDE el cliente
-    alumnos.push(req.body);// ya no lo cargamos manualmente hardcodeado como antes
-    //Guardamos el array actualizado en el JSON
-    fs.writeFileSync(
-        filepath,
-        JSON.stringify(alumnos, null, 2)
+export const postAlumnos = async (req,res) => {
+    
+    const {nombre, edad} = req.body; //sacamos nombre y edad del req.body
+    //en vez de armar un json con los datos, los enviamos a la bd
+    //mediante una consulta sql, mediante la connection importada de
+    //el archivo databas.js
+
+    await connection.query(
+        "INSERT INTO alumnos(nombre,edad) VALUES (?,?)",
+        [nombre,edad]
     );
-    //Ahora, le respondemos al cliente:
-    //(antes, en el que hice manualmente, solo llegaba hasta guardar el nuevo objeto en el json.)
-    //Acá es un paso más, le respondemos al cliente: 
-    res.status(201).json({ //201: recurso creado correctamente
-        mensaje: "Alumno creado",
+
+    res.status(201).json({
+        mensaje:"alumno creado",
         alumno: req.body
-    });
+});
 }
 
 export const deleteAlumno = (req,res) => {
