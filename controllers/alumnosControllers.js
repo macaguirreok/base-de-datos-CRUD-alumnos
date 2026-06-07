@@ -7,18 +7,13 @@ import connection from "../database.js";
 
 const filepath = "./alumnos.json"; //ruta del archivo json, donde está ubicado.
 
-export const getAlumnos = (req, res) => { //Creamos y exportamos una función, llamada getAlumnos.
-    //req, es el objeto request. Contiene la petición del cliente.
-    //res, es el objeto response. Sirve para responderle al cliente.
-    //primero tenía que traer los datos en JSON, del archivo alumnos.json
-    const data = fs.readFileSync(filepath , "utf-8");
-    //convertimos la data de alumnos en json, en objetos java script
-    const alumnos = JSON.parse(data); //ahora es un arrat de JS
-    //ahora, en vez de mostrarlo manualmente como haciamos antes,
-    //lo va a mostrar express:
-    res.json(alumnos); //express, le responde al cliente y le manda el array alumnos,
-    //pero como JSON, automaticamente convierte el array de JS, a JSON.
-    //es el stringify, que hacía antes manualmente.
+export const getAlumnos = async (req, res) => {
+
+    const [alumnos] = await connection.query(
+        "SELECT * FROM alumnos" 
+    );
+
+    res.status(200).json(alumnos);
 }
 
 export const getUnAlumno = (req, res) => {
