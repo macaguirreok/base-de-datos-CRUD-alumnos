@@ -57,36 +57,27 @@ export const postAlumnos = async (req,res) => {
 });
 }
 
-export const deleteAlumno = (req,res) => {
-    //leemos el archivo
-    const data = fs.readFileSync(filepath , "utf-8");
-    //lo convertimos a js
-    const alumnos = JSON.parse(data);
-    //obtenemos el id con el que vamos a buscar al alumno
-    const idEliminar = parseInt(req.params.id);
-    //Creamos el array con el alumno eliminado
-    const alumnosNuevo = alumnos.filter( alumno => {
-    return alumno.id !== idEliminar
-    });
-    //Verificamos si realmente se eliminó
-    if(alumnos.length === alumnosNuevo.length){
-        return res.status(404).json({
+export const deleteAlumno = async (req,res) => {
+    
+    const idAlumno = req.params.id ;
+
+    const [resultado] = await connection.query(
+        "DELETE FROM alumnos WHERE id = ?",
+        [idAlumno]
+    );
+
+    //Acá es si no encontró a ningun alumno para borrar:
+    if (resultado.affectedRows == 0){
+        res.status(404).json({
             mensaje: "Alumno no encontrado"
+        })
+    }else{
+        res.status(200).json({
+            mensaje:"Alumno eliminado correctamente"
         });
     }
 
-    //Guardamos el nuevo array en el json
-    fs.writeFileSync( 
-        filepath,
-        JSON.stringify(alumnosNuevo , null , 2)
-    );
-
-    //Respondemos al cliente:
-    res.json({
-        mensaje:"Alumno eliminado correctamente"
-    });
-
-}
+};
 
 export const updateAlumno = (req,res) => {
     //Leemos el archivo
