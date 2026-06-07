@@ -16,30 +16,26 @@ export const getAlumnos = async (req, res) => {
     res.status(200).json(alumnos);
 }
 
-export const getUnAlumno = (req, res) => {
-    //leer el archivo alumnos.json
-    const data = fs.readFileSync(filepath , "utf-8");
-    //Convertirlo a array js
-    const alumnos = JSON.parse(data);
-    //Obtenemos el id a buscar desde la url:
-    const idBuscar = parseInt(req.params.id);
-    //Buscamos el alumno
-    const alumnoBuscado = alumnos.find(
-        alumno => alumno.id === idBuscar
+export const getUnAlumno = async (req, res) => {
+   
+    //Sacamos el id de los parametros
+    const idAlumno = req.params.id ;
+
+    const [alumno] = await connection.query(
+        "SELECT * FROM alumnos WHERE id = ? ",
+        [idAlumno]
     );
 
-    //Verificamos si es que el alumno existe:
-    if(!alumnoBuscado){
-        return res.status(404).json({
-            mensaje: "alumno no encontrado"
-        });
+    if( alumno.length == 0){
+        res.status(404).json({
+            mensaje: "No existe el alumno"
+        })
+    }else{
+        res.status(200).json(alumno[0]);
     }
 
-    //Si el alumno es encontrado:
-    res.status(200).json({
-        mensaje: "alumno encontrado",
-        alumno: alumnoBuscado
-    });
+
+
 
 }
 
