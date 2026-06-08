@@ -34,9 +34,6 @@ export const getUnAlumno = async (req, res) => {
         res.status(200).json(alumno[0]);
     }
 
-
-
-
 }
 
 export const postAlumnos = async (req,res) => {
@@ -79,48 +76,27 @@ export const deleteAlumno = async (req,res) => {
 
 };
 
-export const updateAlumno = (req,res) => {
-    //Leemos el archivo
-    const data = fs.readFileSync( filepath , "utf-8");
-    //Convertimos a js
-    const alumnos = JSON.parse(data);
-    //Obtenemos el id desde la URL
-    const idActualizar = parseInt(req.params.id);
-    //Variable para saber si existe:
-    let encontrado = false;
+export const updateAlumno = async (req,res) => {
+    
+    const idAlumno = req.params.id;
 
-    //Creamos nuevo array actualizado
-    const alumnosActualizados = alumnos.map( alumno => {
-        //si encontramos el alumno
-        if(alumno.id === idActualizar){
-            encontrado = true;
-            //devolvemos el alumno actualizado
-            return {
-                ...alumno, //spread, copia todo lo que tiene el objeto
-                ...req.body
-            };
-        }
+    const {nombre , edad} = req.body;
 
-        //si no coincide, queda igual
-        return alumno;
-    });
-
-    //Verificamos si existía
-    if(!encontrado){
-        return res.status(404).json({
-            mensaje: "Alumno no encontrado"
-        });
-    }
-
-    //Guardamos el nuevo array
-    fs.writeFileSync(
-        filepath,
-        JSON.stringify(alumnosActualizados, null, 2)
+    const [resultado] = await connection.query(
+        "UPDATE alumnos SET nombre = ?, edad = ? WHERE id = ?",
+        [nombre, edad, idAlumno]
     );
 
-    //Respondemos al cliente
-    res.json({
-        mensaje: "Alumno actualizado correctamente"
-    });
+    if(resultado.affectedRows === 0){
+        res.status(404).json({
+            mensaje: "Alumno no encontrado"
+        });
+
+    }else{
+
+        res.status(200).json({
+            mensaje: "Alumno modificado exitosamente"
+        });
+    }
 
 }
